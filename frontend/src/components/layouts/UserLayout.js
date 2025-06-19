@@ -3,17 +3,17 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { 
   HomeIcon, 
   BriefcaseIcon, 
-  UserGroupIcon, 
+  DocumentTextIcon, 
+  ClipboardDocumentCheckIcon, 
   CalendarIcon, 
+  UserIcon, 
   Cog6ToothIcon,
   Bars3Icon,
-  XMarkIcon,
-  DocumentPlusIcon,
-  UserIcon
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../context/AuthContext';
 
-const AdminLayout = () => {
+const UserLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { logout, user } = useAuth();
   const navigate = useNavigate();
@@ -24,12 +24,13 @@ const AdminLayout = () => {
   };
 
   const navLinks = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: HomeIcon },
-    { name: 'Job Management', path: '/admin/jobs', icon: BriefcaseIcon },
-    { name: 'Create Job', path: '/admin/jobs/create', icon: DocumentPlusIcon },
-    { name: 'Candidate Matching', path: '/admin/jobs/:id/candidates', icon: UserGroupIcon },
-    { name: 'Interview Scheduling', path: '/admin/interviews', icon: CalendarIcon },
-    { name: 'Settings', path: '/admin/settings', icon: Cog6ToothIcon },
+    { name: 'Dashboard', path: '/dashboard', icon: HomeIcon },
+    { name: 'Job Search', path: '/jobs', icon: BriefcaseIcon },
+    { name: 'My Resume', path: '/resume', icon: DocumentTextIcon },
+    { name: 'My Applications', path: '/applications', icon: ClipboardDocumentCheckIcon },
+    { name: 'My Interviews', path: '/interviews', icon: CalendarIcon },
+    { name: 'My Profile', path: '/profile', icon: UserIcon },
+    { name: 'Settings', path: '/settings', icon: Cog6ToothIcon },
   ];
 
   const toggleMobileMenu = () => {
@@ -55,7 +56,7 @@ const AdminLayout = () => {
       {/* Sidebar */}
       <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="p-5">
-          <h1 className="text-xl font-bold mb-6">Admin Dashboard</h1>
+          <h1 className="text-xl font-bold mb-6">AI Recruitment</h1>
           <nav className="space-y-1">
             {navLinks.map((item) => (
               <NavLink
@@ -84,13 +85,13 @@ const AdminLayout = () => {
       <main className="main-content">
         {/* Header */}
         <header className="mb-6 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Welcome, {user?.name || 'Admin'}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome, {user?.name || 'User'}</h1>
           <div className="flex items-center space-x-4">
             <div className="relative">
               <img
                 className="h-10 w-10 rounded-full border-2 border-blue-500"
                 src={user?.avatar || 'https://via.placeholder.com/40'}
-                alt="Admin avatar"
+                alt="User avatar"
               />
             </div>
           </div>
@@ -113,4 +114,4 @@ const AdminLayout = () => {
   );
 };
 
-export default AdminLayout;
+export default UserLayout;
