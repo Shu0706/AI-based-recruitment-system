@@ -235,7 +235,7 @@ const InterviewDetails = () => {
                 <Button 
                   onClick={() => handleStatusUpdate('CONFIRMED')}
                   disabled={updating}
-                  loading={updating && interview.status === 'SCHEDULED'}
+                  isLoading={updating && interview.status === 'SCHEDULED'}
                 >
                   Confirm Interview
                 </Button>
@@ -246,7 +246,7 @@ const InterviewDetails = () => {
                   variant="outline" 
                   onClick={() => handleStatusUpdate('CANCELED')}
                   disabled={updating}
-                  loading={updating && interview.status !== 'CANCELED'}
+                  isLoading={updating && interview.status !== 'CANCELED'}
                   className="text-red-600 border-red-600 hover:bg-red-50"
                 >
                   Cancel Interview
@@ -258,7 +258,7 @@ const InterviewDetails = () => {
                   variant="outline" 
                   onClick={() => handleStatusUpdate('COMPLETED')}
                   disabled={updating}
-                  loading={updating && interview.status !== 'COMPLETED'}
+                  isLoading={updating && interview.status !== 'COMPLETED'}
                 >
                   Mark as Completed
                 </Button>

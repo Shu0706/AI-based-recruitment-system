@@ -36,6 +36,9 @@ import InterviewDetails from './pages/user/InterviewDetails'
 import ResumeUpload from './components/resume/ResumeUpload'
 import ResumeAnalysis from './components/resume/ResumeAnalysis'
 
+// Test Component
+import TestApi from './components/TestApi'
+
 // Protected Route Component
 const ProtectedRoute = ({ element, role }) => {
   // This would normally use the auth context
@@ -65,6 +68,9 @@ function App() {
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password/:token" element={<ResetPassword />} />
         </Route>
+
+        {/* Test Route */}
+        <Route path="/test-api" element={<TestApi />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute element={<AdminLayout />} role="admin" />}>

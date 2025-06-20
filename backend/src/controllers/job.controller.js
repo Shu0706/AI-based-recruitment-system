@@ -116,29 +116,61 @@ exports.getAllJobs = async (req, res) => {
     }
     
     if (req.query.location) {
-      where.location = { [Op.iLike]: `%${req.query.location}%` };
-    }
+      where.location = { [Op.iLike]: `%${req.query.location}%` };    }
     
     if (req.query.type) {
       where.type = req.query.type;
     }
     
-    // Query
-    const { count, rows: jobs } = await Job.findAndCountAll({
-      where,
-      attributes: { 
-        exclude: ['parsedData.embedding'] 
+    // Mock implementation
+    const mockJobs = [
+      {
+        id: 1,
+        title: 'Senior Frontend Developer',
+        company: 'Tech Innovations Inc.',
+        location: 'New York, NY',
+        description: 'We are looking for a Senior Frontend Developer to join our team...',
+        requirements: 'At least 5 years of experience with React, JavaScript, and CSS.',
+        type: 'Full-time',
+        salary: '$120,000 - $150,000',
+        createdAt: new Date('2025-06-10'),
+        updatedAt: new Date('2025-06-10'),
       },
-      limit,
-      offset,
-      order: [['createdAt', 'DESC']],
-    });
+      {
+        id: 2,
+        title: 'Backend Engineer',
+        company: 'DataSoft Solutions',
+        location: 'Remote',
+        description: 'Join our backend team to build scalable APIs and services...',
+        requirements: 'Experience with Node.js, Express, and MongoDB required.',
+        type: 'Full-time',
+        salary: '$110,000 - $140,000',
+        createdAt: new Date('2025-06-12'),
+        updatedAt: new Date('2025-06-12'),
+      },
+      {
+        id: 3,
+        title: 'DevOps Engineer',
+        company: 'Cloud Systems Inc.',
+        location: 'San Francisco, CA',
+        description: 'Help us build and maintain our cloud infrastructure...',
+        requirements: 'AWS, Docker, Kubernetes, and CI/CD experience required.',
+        type: 'Full-time',
+        salary: '$130,000 - $160,000',
+        createdAt: new Date('2025-06-15'),
+        updatedAt: new Date('2025-06-15'),
+      },
+    ];
+    
+    // Simulate pagination
+    const totalJobs = mockJobs.length;
+    const filteredJobs = mockJobs.slice(offset, offset + limit);
     
     res.json({
-      jobs,
-      totalPages: Math.ceil(count / limit),
+      jobs: filteredJobs,
+      totalPages: Math.ceil(totalJobs / limit),
       currentPage: page,
-      totalJobs: count,
+      totalJobs: totalJobs,
     });
   } catch (error) {
     console.error('Error getting jobs:', error);
@@ -153,20 +185,160 @@ exports.getAllJobs = async (req, res) => {
  */
 exports.getJobById = async (req, res) => {
   try {
-    const job = await Job.findOne({
-      where: {
-        id: req.params.id,
-        isActive: true
+    // Mock jobs data
+    const mockJobs = [
+      {
+        id: 1,
+        title: 'Senior Frontend Developer',
+        company: 'Tech Innovations Inc.',
+        location: 'New York, NY',
+        description: 'We are looking for a Senior Frontend Developer to join our team...',
+        requirements: 'At least 5 years of experience with React, JavaScript, and CSS.',
+        type: 'Full-time',
+        salary: '$120,000 - $150,000',
+        isActive: true,
+        createdAt: new Date('2025-06-10'),
+        updatedAt: new Date('2025-06-10'),
+        parsedData: {
+          title: 'Senior Frontend Developer',
+          company: 'Tech Innovations Inc.',
+          location: 'New York, NY',
+          employmentType: 'Full-time',
+          description: 'We are looking for a Senior Frontend Developer to join our team...',
+          responsibilities: [
+            'Build responsive web applications',
+            'Optimize application performance',
+            'Work with UX designers',
+            'Implement new features'
+          ],
+          requiredSkills: [
+            'React',
+            'JavaScript',
+            'CSS',
+            'HTML',
+            'TypeScript'
+          ],
+          preferredSkills: [
+            'Redux',
+            'Next.js',
+            'GraphQL',
+            'Webpack'
+          ],
+          requiredExperience: '5+ years',
+          requiredEducation: "Bachelor's degree in Computer Science or related field",
+          salary: '$120,000 - $150,000',
+          benefits: [
+            'Health insurance',
+            'Flexible work hours',
+            '401(k) matching',
+            'Remote work options'
+          ],
+        }
       },
-      attributes: { 
-        exclude: ['parsedData.embedding'] 
+      {
+        id: 2,
+        title: 'Backend Engineer',
+        company: 'DataSoft Solutions',
+        location: 'Remote',
+        description: 'Join our backend team to build scalable APIs and services...',
+        requirements: 'Experience with Node.js, Express, and MongoDB required.',
+        type: 'Full-time',
+        salary: '$110,000 - $140,000',
+        isActive: true,
+        createdAt: new Date('2025-06-12'),
+        updatedAt: new Date('2025-06-12'),
+        parsedData: {
+          title: 'Backend Engineer',
+          company: 'DataSoft Solutions',
+          location: 'Remote',
+          employmentType: 'Full-time',
+          description: 'Join our backend team to build scalable APIs and services...',
+          responsibilities: [
+            'Design and develop APIs',
+            'Optimize database queries',
+            'Implement security best practices',
+            'Write unit and integration tests'
+          ],
+          requiredSkills: [
+            'Node.js',
+            'Express',
+            'MongoDB',
+            'RESTful APIs',
+            'JavaScript'
+          ],
+          preferredSkills: [
+            'TypeScript',
+            'Docker',
+            'Microservices',
+            'AWS'
+          ],
+          requiredExperience: '3+ years',
+          requiredEducation: "Bachelor's degree",
+          salary: '$110,000 - $140,000',
+          benefits: [
+            'Health insurance',
+            'Flexible work hours',
+            'Professional development',
+            'Remote work'
+          ],
+        }
       },
-    });
+      {
+        id: 3,
+        title: 'DevOps Engineer',
+        company: 'Cloud Systems Inc.',
+        location: 'San Francisco, CA',
+        description: 'Help us build and maintain our cloud infrastructure...',
+        requirements: 'AWS, Docker, Kubernetes, and CI/CD experience required.',
+        type: 'Full-time',
+        salary: '$130,000 - $160,000',
+        isActive: true,
+        createdAt: new Date('2025-06-15'),
+        updatedAt: new Date('2025-06-15'),
+        parsedData: {
+          title: 'DevOps Engineer',
+          company: 'Cloud Systems Inc.',
+          location: 'San Francisco, CA',
+          employmentType: 'Full-time',
+          description: 'Help us build and maintain our cloud infrastructure...',
+          responsibilities: [
+            'Build and maintain CI/CD pipelines',
+            'Manage cloud infrastructure',
+            'Automate deployment processes',
+            'Monitor system performance'
+          ],
+          requiredSkills: [
+            'AWS',
+            'Docker',
+            'Kubernetes',
+            'CI/CD',
+            'Terraform'
+          ],
+          preferredSkills: [
+            'Python',
+            'Bash',
+            'Monitoring tools',
+            'Security best practices'
+          ],
+          requiredExperience: '4+ years',
+          requiredEducation: "Bachelor's degree in Computer Science or related field",
+          salary: '$130,000 - $160,000',
+          benefits: [
+            'Health insurance',
+            'Stock options',
+            'Flexible work hours',
+            'Gym membership'
+          ],
+        }
+      }
+    ];
+    
+    const jobId = parseInt(req.params.id);
+    const job = mockJobs.find(job => job.id === jobId && job.isActive);
     
     if (!job) {
       return res.status(404).json({ message: 'Job not found' });
-    }
-    
+    }    
     res.json(job);
   } catch (error) {
     console.error('Error getting job:', error);

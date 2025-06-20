@@ -24,14 +24,13 @@ const CandidateMatching = () => {
     const fetchJobAndCandidates = async () => {
       try {
         setLoading(true);
-        
-        // Fetch job details
-        const jobResponse = await JobService.getJobById(id);
-        setJob(jobResponse.data);
+          // Fetch job details
+        const jobData = await JobService.getJobById(id);
+        setJob(jobData);
         
         // Fetch matching candidates
-        const candidatesResponse = await JobService.getMatchingCandidates(id);
-        setCandidates(candidatesResponse.data || []);
+        const candidatesData = await JobService.getMatchingCandidates(id);
+        setCandidates(candidatesData || []);
       } catch (err) {
         console.error('Error fetching data:', err);
         setError(err.response?.data?.message || 'Failed to fetch data');

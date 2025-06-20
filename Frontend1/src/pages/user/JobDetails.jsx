@@ -18,13 +18,11 @@ const JobDetails = () => {
   const [error, setError] = useState(null);
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
-
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
         setLoading(true);
-        const response = await JobService.getJobById(id);
-        const jobData = response.data;
+        const jobData = await JobService.getJobById(id);
         setJob(jobData);
         
         // Check if user has already applied to this job
@@ -137,7 +135,7 @@ const JobDetails = () => {
                 <Button 
                   onClick={handleApply} 
                   disabled={applying || !user}
-                  loading={applying}
+                  isLoading={applying}
                   className="px-6 py-3"
                 >
                   {applying ? 'Applying...' : 'Apply Now'}
@@ -198,7 +196,7 @@ const JobDetails = () => {
               <Button 
                 onClick={handleApply} 
                 disabled={applying || !user}
-                loading={applying}
+                isLoading={applying}
                 className="w-full md:w-auto"
               >
                 {applying ? 'Applying...' : 'Apply Now'}

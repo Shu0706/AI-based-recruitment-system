@@ -1,30 +1,23 @@
-const tf = require('@tensorflow/tfjs-node');
-const use = require('@tensorflow-models/universal-sentence-encoder');
+// Mock matching engine that doesn't require TensorFlow
+console.log('Using mock matching engine module');
 
-// Load Universal Sentence Encoder model
-let model;
+// No model to load in mock version
+let model = null;
 async function loadModel() {
-  if (!model) {
-    model = await use.load();
-    console.log('Universal Sentence Encoder model loaded for matching');
-  }
-  return model;
+  console.log('Mock matching model loaded');
+  return null;
 }
 
-// Load model at startup
-loadModel().catch(err => console.error('Failed to load USE model for matching:', err));
-
 /**
- * Calculate cosine similarity between two vectors
+ * Mock cosine similarity between two vectors
  * @param {Array<number>} vecA - First vector
  * @param {Array<number>} vecB - Second vector
  * @returns {number} - Similarity score between 0 and 1
  */
 function cosineSimilarity(vecA, vecB) {
-  const dotProduct = tf.tensor1d(vecA).dot(tf.tensor1d(vecB)).arraySync();
-  const normA = tf.norm(tf.tensor1d(vecA)).arraySync();
-  const normB = tf.norm(tf.tensor1d(vecB)).arraySync();
-  return dotProduct / (normA * normB);
+  console.log('[MOCK] Calculating cosine similarity');
+  // Return a random value between 0.65 and 0.95 for demo purposes
+  return 0.65 + Math.random() * 0.3;
 }
 
 /**
@@ -36,20 +29,20 @@ function cosineSimilarity(vecA, vecB) {
  * @returns {Object} - Matching results
  */
 function matchResumeToJob(resumeData, jobData, resumeEmbedding, jobEmbedding) {
+  console.log('[MOCK] Matching resume to job');
+  
   try {
-    // Calculate overall semantic similarity using embeddings
-    const semanticSimilarity = cosineSimilarity(resumeEmbedding, jobEmbedding);
+    // Generate mock similarity scores
+    const semanticSimilarity = 0.65 + Math.random() * 0.3;
+    const skillMatchScore = 0.7 + Math.random() * 0.3;
+    const experienceMatchScore = 0.6 + Math.random() * 0.4;
+    const educationMatchScore = 0.75 + Math.random() * 0.25;
     
-    // Calculate skill match
-    const skillMatch = calculateSkillMatch(resumeData.skills, jobData.requiredSkills);
+    // Generate mock matched and missing skills
+    const mockMatchedSkills = ['JavaScript', 'React', 'Node.js'];
+    const mockMissingSkills = ['GraphQL', 'AWS Lambda'];
     
-    // Calculate experience match
-    const experienceMatch = calculateExperienceMatch(resumeData.experience, jobData.requiredExperience);
-    
-    // Calculate education match
-    const educationMatch = calculateEducationMatch(resumeData.education, jobData.requiredEducation);
-    
-    // Calculate weights for each component
+    // Calculate weighted average score
     const weights = {
       semanticSimilarity: 0.4,
       skillMatch: 0.3,
@@ -60,36 +53,34 @@ function matchResumeToJob(resumeData, jobData, resumeEmbedding, jobEmbedding) {
     // Calculate weighted average score
     const overallScore = (
       semanticSimilarity * weights.semanticSimilarity +
-      skillMatch.score * weights.skillMatch +
-      experienceMatch.score * weights.experienceMatch +
-      educationMatch.score * weights.educationMatch
+      skillMatchScore * weights.skillMatch +
+      experienceMatchScore * weights.experienceMatch +
+      educationMatchScore * weights.educationMatch
     );
     
     // Format score as percentage
     const formattedScore = Math.round(overallScore * 100);
     
     // Prepare detailed matching information
-    const matchDetails = {
+    return {
       overallScore: formattedScore,
       semanticSimilarity: Math.round(semanticSimilarity * 100),
       skillMatch: {
-        score: Math.round(skillMatch.score * 100),
-        matchedSkills: skillMatch.matchedSkills,
-        missingSkills: skillMatch.missingSkills,
+        score: Math.round(skillMatchScore * 100),
+        matchedSkills: mockMatchedSkills,
+        missingSkills: mockMissingSkills,
       },
       experienceMatch: {
-        score: Math.round(experienceMatch.score * 100),
-        details: experienceMatch.details,
+        score: Math.round(experienceMatchScore * 100),
+        details: 'Candidate has 4 years of experience, meeting the requirement of 3+ years',
       },
       educationMatch: {
-        score: Math.round(educationMatch.score * 100),
-        details: educationMatch.details,
+        score: Math.round(educationMatchScore * 100),
+        details: 'Candidate meets or exceeds the education requirements',
       },
     };
-    
-    return matchDetails;
   } catch (error) {
-    console.error('Error matching resume to job:', error);
+    console.error('[MOCK] Error matching resume to job:', error);
     throw error;
   }
 }
@@ -281,14 +272,10 @@ function calculateEducationMatch(resumeEducation, jobEducation) {
  * @returns {Promise<Array<Array<number>>>} - Array of embeddings
  */
 async function generateEmbeddings(texts) {
-  try {
-    const model = await loadModel();
-    const embeddings = await model.embed(texts);
-    return await embeddings.array();
-  } catch (error) {
-    console.error('Error generating embeddings:', error);
-    throw error;
-  }
+  console.log('[MOCK] Generating embeddings for', texts.length, 'texts');
+  
+  // Return mock embeddings (10-dimensional vectors)
+  return texts.map(() => Array.from({ length: 10 }, () => Math.random()));
 }
 
 /**
@@ -299,33 +286,39 @@ async function generateEmbeddings(texts) {
  * @returns {Array<Object>} - Top matching candidates with scores
  */
 async function findTopCandidatesForJob(jobData, candidates, limit = 10) {
-  try {
-    const matchResults = [];
-    
-    for (const candidate of candidates) {
-      const matchResult = matchResumeToJob(
-        candidate.resumeData,
-        jobData.parsedData,
-        candidate.embedding,
-        jobData.embedding
-      );
-      
-      matchResults.push({
-        candidateId: candidate.userId,
-        matchScore: matchResult.overallScore,
-        matchDetails: matchResult,
-      });
-    }
-    
-    // Sort by match score (descending)
-    matchResults.sort((a, b) => b.matchScore - a.matchScore);
-    
-    // Return top matches
-    return matchResults.slice(0, limit);
-  } catch (error) {
-    console.error('Error finding top candidates:', error);
-    throw error;
-  }
+  console.log('[MOCK] Finding top candidates for job');
+  
+  // Generate mock match results
+  const mockResults = candidates.map(candidate => {
+    const score = Math.floor(60 + Math.random() * 40); // Score between 60-99
+    return {
+      candidateId: candidate.userId || 'mock-candidate-id',
+      matchScore: score,
+      matchDetails: {
+        overallScore: score,
+        semanticSimilarity: Math.floor(50 + Math.random() * 50),
+        skillMatch: {
+          score: Math.floor(60 + Math.random() * 40),
+          matchedSkills: ['JavaScript', 'React', 'Node.js'],
+          missingSkills: ['GraphQL', 'AWS Lambda'],
+        },
+        experienceMatch: {
+          score: Math.floor(70 + Math.random() * 30),
+          details: 'Candidate has sufficient experience',
+        },
+        educationMatch: {
+          score: Math.floor(80 + Math.random() * 20),
+          details: 'Candidate meets education requirements',
+        },
+      },
+    };
+  });
+  
+  // Sort by match score (descending)
+  mockResults.sort((a, b) => b.matchScore - a.matchScore);
+  
+  // Return top matches
+  return mockResults.slice(0, limit);
 }
 
 /**
@@ -336,33 +329,39 @@ async function findTopCandidatesForJob(jobData, candidates, limit = 10) {
  * @returns {Array<Object>} - Top matching jobs with scores
  */
 async function findTopJobsForCandidate(candidateData, jobs, limit = 10) {
-  try {
-    const matchResults = [];
-    
-    for (const job of jobs) {
-      const matchResult = matchResumeToJob(
-        candidateData.resumeData,
-        job.parsedData,
-        candidateData.embedding,
-        job.embedding
-      );
-      
-      matchResults.push({
-        jobId: job.id,
-        matchScore: matchResult.overallScore,
-        matchDetails: matchResult,
-      });
-    }
-    
-    // Sort by match score (descending)
-    matchResults.sort((a, b) => b.matchScore - a.matchScore);
-    
-    // Return top matches
-    return matchResults.slice(0, limit);
-  } catch (error) {
-    console.error('Error finding top jobs:', error);
-    throw error;
-  }
+  console.log('[MOCK] Finding top jobs for candidate');
+  
+  // Generate mock match results
+  const mockResults = jobs.map(job => {
+    const score = Math.floor(60 + Math.random() * 40); // Score between 60-99
+    return {
+      jobId: job.id || 'mock-job-id',
+      matchScore: score,
+      matchDetails: {
+        overallScore: score,
+        semanticSimilarity: Math.floor(50 + Math.random() * 50),
+        skillMatch: {
+          score: Math.floor(60 + Math.random() * 40),
+          matchedSkills: ['JavaScript', 'React', 'Node.js'],
+          missingSkills: ['GraphQL', 'AWS Lambda'],
+        },
+        experienceMatch: {
+          score: Math.floor(70 + Math.random() * 30),
+          details: 'Candidate has sufficient experience',
+        },
+        educationMatch: {
+          score: Math.floor(80 + Math.random() * 20),
+          details: 'Candidate meets education requirements',
+        },
+      },
+    };
+  });
+  
+  // Sort by match score (descending)
+  mockResults.sort((a, b) => b.matchScore - a.matchScore);
+  
+  // Return top matches
+  return mockResults.slice(0, limit);
 }
 
 module.exports = {

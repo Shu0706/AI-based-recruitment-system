@@ -21,11 +21,10 @@ const UserLayout = () => {
     logout();
     navigate('/login');
   };
-
   const navLinks = [
     { name: 'Dashboard', path: '/dashboard', icon: HomeIcon },
     { name: 'Job Search', path: '/jobs', icon: BriefcaseIcon },
-    { name: 'My Applications', path: '/applications', icon: DocumentTextIcon },
+    { name: 'My Applications', path: '/applications/status', icon: DocumentTextIcon },
     { name: 'My Interviews', path: '/interviews', icon: CalendarIcon },
     { name: 'Profile', path: '/profile', icon: UserIcon },
   ];
@@ -83,11 +82,9 @@ const UserLayout = () => {
         {/* Header */}
         <header className="mb-6 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Welcome, {user?.name || 'User'}</h1>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <img
+          <div className="flex items-center space-x-4">            <div className="relative">              <img
                 className="h-10 w-10 rounded-full border-2 border-blue-500"
-                src={user?.avatar || 'https://via.placeholder.com/40'}
+                src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=0D8ABC&color=fff`}
                 alt="User avatar"
               />
             </div>

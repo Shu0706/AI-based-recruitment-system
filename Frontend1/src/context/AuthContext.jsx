@@ -1,9 +1,17 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
-import { AUTH_API } from '../config/constants';
+import { AUTH_API, API_URL } from '../config/constants';
 
 // Create Auth Context
 export const AuthContext = createContext();
+
+// Create a custom axios instance with base URL
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 // Auth Provider Component
 export const AuthProvider = ({ children }) => {
@@ -17,17 +25,18 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       
       if (token) {
-        try {          // Set default authorization header
-          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        try {
+          // Set authorization header for our API instance
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           
           // Get current user data
-          const response = await axios.get(AUTH_API.CURRENT_USER);
+          const response = await api.get('/auth/me');
           setUser(response.data);
         } catch (err) {
           // Clear invalid token
           localStorage.removeItem('token');
           localStorage.removeItem('userRole');
-          delete axios.defaults.headers.common['Authorization'];
+          delete api.defaults.headers.common['Authorization'];
           setError('Authentication failed. Please login again.');
         }
       }
@@ -37,54 +46,67 @@ export const AuthProvider = ({ children }) => {
     
     checkAuthStatus();
   }, []);
-  
-  // Login function
+    // Login function
   const login = async (credentials) => {
-    try {      setLoading(true);
+    try {
+      setLoading(true);
       setError(null);
       
-      const response = await axios.post(AUTH_API.LOGIN, credentials);
+      console.log('Login attempt with credentials:', credentials);
+      console.log('API base URL:', API_URL);
+      
+      const response = await api.post('/auth/login', credentials);
+      console.log('Login response:', response.data);
+      
       const { token, user } = response.data;
       
       // Save token and user role
       localStorage.setItem('token', token);
       localStorage.setItem('userRole', user.role);
       
-      // Set default authorization header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      // Set authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       setUser(user);
       setLoading(false);
       
-      return user;
-    } catch (err) {
+      return user;    } catch (err) {
       setLoading(false);
+      console.error('Login error:', err);
+      console.error('Error response:', err.response?.data);
+      console.error('Error status:', err.response?.status);
       setError(err.response?.data?.message || 'Login failed. Please try again.');
       throw err;
     }
-  };
-  
-  // Register function
+  };  // Register function
   const register = async (userData) => {
-    try {      setLoading(true);
+    try {
+      setLoading(true);
       setError(null);
       
-      const response = await axios.post(AUTH_API.REGISTER, userData);
+      console.log('Register attempt with data:', userData);
+      console.log('API base URL:', API_URL);
+      
+      const response = await api.post('/auth/register', userData);
+      console.log('Register response:', response.data);
+      
       const { token, user } = response.data;
       
       // Save token and user role
       localStorage.setItem('token', token);
       localStorage.setItem('userRole', user.role);
       
-      // Set default authorization header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      // Set authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       setUser(user);
       setLoading(false);
       
-      return user;
-    } catch (err) {
+      return user;    } catch (err) {
       setLoading(false);
+      console.error('Register error:', err);
+      console.error('Error response:', err.response?.data);
+      console.error('Error status:', err.response?.status);
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
       throw err;
     }
@@ -96,19 +118,20 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
     
-    // Remove default authorization header
-    delete axios.defaults.headers.common['Authorization'];
+    // Remove authorization header
+    delete api.defaults.headers.common['Authorization'];
     
     // Clear user state
     setUser(null);
   };
-  
   // Update user profile
   const updateProfile = async (profileData) => {
-    try {      setLoading(true);
+    try {
+      setLoading(true);
       setError(null);
       
-      const response = await axios.put(`${AUTH_API.CURRENT_USER}`, profileData);
+      // Use correct endpoint with user ID
+      const response = await api.put(`/users/${user.id}/profile`, profileData);
       setUser(response.data);
       setLoading(false);
       

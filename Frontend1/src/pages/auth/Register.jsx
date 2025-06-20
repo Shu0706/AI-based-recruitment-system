@@ -16,14 +16,9 @@ const Register = () => {
       .min(2, 'Name is too short'),
     email: Yup.string()
       .email('Invalid email address')
-      .required('Email is required'),
-    password: Yup.string()
+      .required('Email is required'),    password: Yup.string()
       .required('Password is required')
-      .min(8, 'Password must be at least 8 characters')
-      .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
-      ),
+      .min(6, 'Password must be at least 6 characters'),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref('password'), null], 'Passwords must match')
       .required('Please confirm your password'),
@@ -33,14 +28,24 @@ const Register = () => {
     agreeToTerms: Yup.boolean()
       .oneOf([true], 'You must agree to the terms and conditions')
   });
-
   // Handle registration form submission
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       setRegisterError(null);
-      const { confirmPassword, agreeToTerms, ...userData } = values;
+      const { confirmPassword, agreeToTerms, name, ...userData } = values;
       
-      const user = await register(userData);
+      // Split name into firstName and lastName
+      const nameParts = name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      const registrationData = {
+        ...userData,
+        firstName,
+        lastName
+      };
+      
+      const user = await register(registrationData);
       
       // Redirect based on user role
       if (user.role === 'admin') {

@@ -22,12 +22,10 @@ const AdminLayout = () => {
     logout();
     navigate('/login');
   };
-
   const navLinks = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: HomeIcon },
     { name: 'Job Management', path: '/admin/jobs', icon: BriefcaseIcon },
     { name: 'Create Job', path: '/admin/jobs/create', icon: DocumentPlusIcon },
-    { name: 'Candidate Matching', path: '/admin/jobs/:id/candidates', icon: UserGroupIcon },
     { name: 'Interview Scheduling', path: '/admin/interviews', icon: CalendarIcon },
     { name: 'Settings', path: '/admin/settings', icon: Cog6ToothIcon },
   ];
@@ -85,11 +83,9 @@ const AdminLayout = () => {
         {/* Header */}
         <header className="mb-6 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Welcome, {user?.name || 'Admin'}</h1>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <img
+          <div className="flex items-center space-x-4">            <div className="relative">              <img
                 className="h-10 w-10 rounded-full border-2 border-blue-500"
-                src={user?.avatar || 'https://via.placeholder.com/40'}
+                src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Admin')}&background=0D8ABC&color=fff`}
                 alt="Admin avatar"
               />
             </div>

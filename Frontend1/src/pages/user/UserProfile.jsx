@@ -663,11 +663,10 @@ const UserProfile = () => {
           </div>
         </Card>
         
-        <div className="flex justify-end">
-          <Button 
+        <div className="flex justify-end">          <Button 
             type="submit" 
             disabled={saving}
-            loading={saving}
+            isLoading={saving}
             className="px-6 py-2"
           >
             {saving ? 'Saving...' : 'Save Profile'}
