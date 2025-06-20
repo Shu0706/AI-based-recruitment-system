@@ -86,7 +86,7 @@ frontend/
 │   ├── services/           # API service functions
 │   ├── utils/              # Utility functions
 │   ├── App.css             # Global styles
-│   ├── App.js              # Main App component
+│   ├── App.jsx              # Main App component
 │   ├── index.css           # Base styles and Tailwind directives
 │   └── main.jsx            # Entry point
 ├── .env                    # Environment variables
@@ -101,9 +101,6 @@ frontend/
 ## Available Scripts
 
 - `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
 
 ## Authentication and Routing
 
