@@ -18,21 +18,25 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   // Check if user is already logged in on component mount
   useEffect(() => {
     const checkAuthStatus = async () => {
       const token = localStorage.getItem('token');
+      
+      console.log('Checking auth status. Token exists:', !!token);
       
       if (token) {
         try {
           // Set authorization header for our API instance
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           
+          console.log('Attempting to get current user data...');
           // Get current user data
           const response = await api.get('/auth/me');
+          console.log('Current user data received:', response.data);
           setUser(response.data);
         } catch (err) {
+          console.log('Auth check failed:', err.response?.data || err.message);
           // Clear invalid token
           localStorage.removeItem('token');
           localStorage.removeItem('userRole');

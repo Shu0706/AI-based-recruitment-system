@@ -38,6 +38,8 @@ import ResumeAnalysis from './components/resume/ResumeAnalysis'
 
 // Test Component
 import TestApi from './components/TestApi'
+import TestLogin from './debug/TestLogin'
+import AuthStatus from './debug/AuthStatus'
 
 // Protected Route Component
 const ProtectedRoute = ({ element, role }) => {
@@ -45,11 +47,15 @@ const ProtectedRoute = ({ element, role }) => {
   const isAuthenticated = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
   
+  console.log('Protected route check:', { isAuthenticated: !!isAuthenticated, userRole, requiredRole: role });
+  
   if (!isAuthenticated) {
+    console.log('No authentication, redirecting to login');
     return <Navigate to="/login" />;
   }
   
   if (role && userRole !== role) {
+    console.log('Role mismatch, redirecting based on role');
     return <Navigate to={userRole === 'admin' ? '/admin/dashboard' : '/dashboard'} />;
   }
   
@@ -71,6 +77,8 @@ function App() {
 
         {/* Test Route */}
         <Route path="/test-api" element={<TestApi />} />
+        <Route path="/test-login" element={<TestLogin />} />
+        <Route path="/auth-status" element={<AuthStatus />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute element={<AdminLayout />} role="admin" />}>

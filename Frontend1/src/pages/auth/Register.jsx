@@ -13,10 +13,10 @@ const Register = () => {
   const registerSchema = Yup.object().shape({
     name: Yup.string()
       .required('Full name is required')
-      .min(2, 'Name is too short'),
-    email: Yup.string()
+      .min(2, 'Name is too short'),    email: Yup.string()
       .email('Invalid email address')
-      .required('Email is required'),    password: Yup.string()
+      .required('Email is required'),
+    password: Yup.string()
       .required('Password is required')
       .min(6, 'Password must be at least 6 characters'),
     confirmPassword: Yup.string()

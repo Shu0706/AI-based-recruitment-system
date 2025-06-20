@@ -1,30 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
-
-// Mock user data since we don't have a real database connection
-const mockUsers = [
-  {
-    id: 1,
-    firstName: 'Test',
-    lastName: 'User',
-    email: 'user@example.com',
-    password: '$2b$10$G6esOSDqyvhDbTezzD.67OSICqT898Kvu59UnZYT4xhcNHeUOyyLK', // password123
-    role: 'user',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 2,
-    firstName: 'Admin',
-    lastName: 'User',
-    email: 'admin@example.com',
-    password: '$2b$10$G6esOSDqyvhDbTezzD.67OSICqT898Kvu59UnZYT4xhcNHeUOyyLK', // password123
-    role: 'admin',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
+const User = require('../models/user.model');
 
 /**
  * Register a new user
@@ -34,45 +11,44 @@ const mockUsers = [
 exports.register = async (req, res) => {
   try {
     // Check for validation errors
-    const errors = validationResult(req);    if (!errors.isEmpty()) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { firstName, lastName, email, password, role } = req.body;
 
     // Check if user already exists
-    const userExists = mockUsers.find(u => u.email === email);
-    if (userExists) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Mock user creation
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = {
-      id: mockUsers.length + 1,
+    // Create new user
+    const user = new User({
       firstName,
       lastName,
       email,
-      password: hashedPassword,
-      role: role || 'user', // Default to 'user' if not specified
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+      password, // Will be hashed by the pre-save middleware
+      role: role || 'user'
+    });
 
-    // Add to mock users
-    mockUsers.push(newUser);    // Generate tokens
-    const tokens = generateTokens(newUser);
+    // Save user to database
+    await user.save();
+
+    // Generate tokens
+    const tokens = generateTokens(user);
 
     res.status(201).json({
       message: 'User registered successfully',
       token: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       user: {
-        id: newUser.id,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        email: newUser.email,
-        role: newUser.role,
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -97,28 +73,30 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     // Check if user exists
-    const user = mockUsers.find(u => u.email === email);    if (!user) {
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Verify password
-    const isMatch = await bcrypt.compare(password, user.password);
-    
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
-    }    // Generate tokens
-    const tokens = generateTokens(user);
+    }
 
-    // In a real app, we would save the refresh token
-    // user.refreshToken = tokens.refreshToken;
-    // await user.save();
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Generate tokens
+    const tokens = generateTokens(user);
 
     res.json({
       message: 'Login successful',
       token: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       user: {
-        id: user.id,
+        id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
@@ -200,17 +178,14 @@ exports.logout = async (req, res) => {
  */
 exports.getCurrentUser = async (req, res) => {
   try {
-    // Find user by id from the mock data
-    const user = mockUsers.find(u => u.id === req.user.id);
+    // Find user by id from the database
+    const user = await User.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Don't return password and refreshToken
-    const { password, refreshToken, ...userWithoutSensitiveData } = user;
-
-    res.json(userWithoutSensitiveData);
+    res.json(user);
   } catch (error) {
     console.error('Error getting current user:', error);
     res.status(500).json({ message: 'Server error' });

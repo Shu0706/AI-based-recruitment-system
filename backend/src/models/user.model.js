@@ -1,57 +1,89 @@
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-// Mock User model for development
-class User {
-  constructor(data) {
-    this.id = data.id;
-    this.firstName = data.firstName;
-    this.lastName = data.lastName;
-    this.email = data.email;
-    this.password = data.password;
-    this.role = data.role || 'user';
-    this.phone = data.phone;
-    this.location = data.location;
-    this.profileImage = data.profileImage;
-    this.isActive = data.isActive !== undefined ? data.isActive : true;
-    this.lastLogin = data.lastLogin;
-    this.refreshToken = data.refreshToken;
-    this.createdAt = data.createdAt || new Date().toISOString();
-    this.updatedAt = data.updatedAt || new Date().toISOString();
+const userSchema = new mongoose.Schema({
+  firstName: {
+    type: String,
+    required: [true, 'First name is required'],
+    trim: true,
+    maxlength: [50, 'First name cannot be more than 50 characters']
+  },
+  lastName: {
+    type: String,
+    required: [true, 'Last name is required'],
+    trim: true,
+    maxlength: [50, 'Last name cannot be more than 50 characters']
+  },
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+  },
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: [6, 'Password must be at least 6 characters']
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
+  phone: {
+    type: String,
+    trim: true
+  },
+  location: {
+    type: String,
+    trim: true
+  },
+  profileImage: {
+    type: String
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  lastLogin: {
+    type: Date
+  },
+  refreshToken: {
+    type: String
   }
+}, {
+  timestamps: true
+});
 
-  async save() {
-    // Mock save method
-    return this;
-  }
+// Hash password before saving
+userSchema.pre('save', async function(next) {
+  // Only hash the password if it has been modified (or is new)
+  if (!this.isModified('password')) return next();
 
-  async comparePassword(password) {
-    // In a real app, this would use bcrypt.compare
-    // For development, just return true
-    return true;
+  try {
+    // Hash password with cost of 12
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
   }
+});
 
-  // Static methods
-  static async findOne() {
-    // Mock returning null (user not found)
-    return null;
-  }
+// Compare password method
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
-  static async findByPk() {
-    // Mock returning null (user not found)
-    return null;
-  }
+// Remove password from JSON output
+userSchema.methods.toJSON = function() {
+  const userObject = this.toObject();
+  delete userObject.password;
+  delete userObject.refreshToken;
+  return userObject;
+};
 
-  static async create(data) {
-    // Create new user instance
-    const user = new User({
-      id: Date.now().toString(),
-      ...data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    });
-    
-    return user;
-  }
-}
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;
