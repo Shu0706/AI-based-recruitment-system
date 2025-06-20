@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import { AUTH_API } from '../config/constants';
 
 // Create Auth Context
 export const AuthContext = createContext();
@@ -16,12 +17,11 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       
       if (token) {
-        try {
-          // Set default authorization header
+        try {          // Set default authorization header
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           
           // Get current user data
-          const response = await axios.get('/api/auth/me');
+          const response = await axios.get(AUTH_API.CURRENT_USER);
           setUser(response.data);
         } catch (err) {
           // Clear invalid token
@@ -40,11 +40,10 @@ export const AuthProvider = ({ children }) => {
   
   // Login function
   const login = async (credentials) => {
-    try {
-      setLoading(true);
+    try {      setLoading(true);
       setError(null);
       
-      const response = await axios.post('/api/auth/login', credentials);
+      const response = await axios.post(AUTH_API.LOGIN, credentials);
       const { token, user } = response.data;
       
       // Save token and user role
@@ -67,11 +66,10 @@ export const AuthProvider = ({ children }) => {
   
   // Register function
   const register = async (userData) => {
-    try {
-      setLoading(true);
+    try {      setLoading(true);
       setError(null);
       
-      const response = await axios.post('/api/auth/register', userData);
+      const response = await axios.post(AUTH_API.REGISTER, userData);
       const { token, user } = response.data;
       
       // Save token and user role
@@ -107,11 +105,10 @@ export const AuthProvider = ({ children }) => {
   
   // Update user profile
   const updateProfile = async (profileData) => {
-    try {
-      setLoading(true);
+    try {      setLoading(true);
       setError(null);
       
-      const response = await axios.put('/api/users/profile', profileData);
+      const response = await axios.put(`${AUTH_API.CURRENT_USER}`, profileData);
       setUser(response.data);
       setLoading(false);
       
