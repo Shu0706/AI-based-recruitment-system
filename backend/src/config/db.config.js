@@ -1,23 +1,22 @@
-// Mock database connection for development
+const mongoose = require('mongoose');
+
+// MongoDB connection
 const connectDB = async () => {
   try {
-    console.log('Mock database connection successful');
+    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ai-recruitment', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
     return true;
   } catch (error) {
     console.error('Database connection error:', error);
-    return false;
+    process.exit(1);
   }
-};
-
-// Export a mock sequelize object
-const sequelize = {
-  define: () => ({}),
-  sync: () => Promise.resolve(),
-  authenticate: () => Promise.resolve(),
-  models: {}
 };
 
 module.exports = {
   connectDB,
-  sequelize
+  mongoose
 };
