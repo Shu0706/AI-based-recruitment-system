@@ -3,10 +3,7 @@ const mongoose = require('mongoose');
 // MongoDB connection
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ai-recruitment', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ai-recruitment');
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     return true;

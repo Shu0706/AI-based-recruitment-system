@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator');
-const Job = require('../models/job.model');
-const Resume = require('../models/resume.model');
-const Application = require('../models/application.model');
+// const Job = require('../models/job.model'); // Temporarily disabled - will convert to MongoDB later
+// const Resume = require('../models/resume.model'); // Temporarily disabled
+// const Application = require('../models/application.model'); // Temporarily disabled
 const User = require('../models/user.model');
 const { 
   parseJobDescription, 

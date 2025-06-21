@@ -2,7 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { validationResult } = require('express-validator');
-const Resume = require('../models/resume.model');
+// const Resume = require('../models/resume.model'); // Temporarily disabled
 const { 
   extractTextFromResume, 
   parseResumeText, 

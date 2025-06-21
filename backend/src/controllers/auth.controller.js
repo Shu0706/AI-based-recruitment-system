@@ -68,11 +68,9 @@ exports.login = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
-    }
+    }    const { email, password } = req.body;
 
-    const { email, password } = req.body;
-
-    // Check if user exists
+    // Check if user exists and include password field
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -131,7 +129,7 @@ exports.refresh = async (req, res) => {
     }
 
     // Find user by id
-    const user = mockUsers.find(u => u.id === decoded.id);
+    const user = await User.findById(decoded.id);
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid refresh token' });
@@ -200,14 +198,14 @@ exports.getCurrentUser = async (req, res) => {
 const generateTokens = (user) => {
   // Generate access token
   const accessToken = jwt.sign(
-    { id: user.id, role: user.role },
+    { id: user._id, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN }
   );
 
   // Generate refresh token
   const refreshToken = jwt.sign(
-    { id: user.id },
+    { id: user._id },
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN }
   );
