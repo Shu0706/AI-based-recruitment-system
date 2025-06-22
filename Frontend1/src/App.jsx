@@ -36,10 +36,11 @@ import InterviewDetails from './pages/user/InterviewDetails'
 import ResumeUpload from './components/resume/ResumeUpload'
 import ResumeAnalysis from './components/resume/ResumeAnalysis'
 
-// Test Component
+// Test Components
 import TestApi from './components/TestApi'
 import TestLogin from './debug/TestLogin'
 import AuthStatus from './debug/AuthStatus'
+import ApiTest from './debug/ApiTest'
 
 // Protected Route Component
 const ProtectedRoute = ({ element, role }) => {
@@ -75,9 +76,10 @@ function App() {
           <Route path="reset-password/:token" element={<ResetPassword />} />
         </Route>
 
-        {/* Test Route */}
+        {/* Test Routes */}
         <Route path="/test-api" element={<TestApi />} />
         <Route path="/test-login" element={<TestLogin />} />
+        <Route path="/api-test" element={<ApiTest />} />
         <Route path="/auth-status" element={<AuthStatus />} />
 
         {/* Admin Routes */}

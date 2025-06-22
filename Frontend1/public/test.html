@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .result { background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .error { background: #ffe6e6; border: 1px solid #ff9999; }
+        .success { background: #e6ffe6; border: 1px solid #99ff99; }
+    </style>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    
+    <div class="test-section">
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <button onclick="testRegister()">Test Register</button>
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        
+        function addResult(message, isError = false) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${isError ? 'error' : 'success'}`;
+            resultDiv.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function testHealth() {
+            try {
+                addResult('Testing health endpoint...');
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`✅ Health check successful: ${JSON.stringify(data)}`);
+                } else {
+                    addResult(`❌ Health check failed: ${response.status} - ${JSON.stringify(data)}`, true);
+                }
+            } catch (error) {
+                addResult(`❌ Health check error: ${error.message}`, true);
+            }
+        }
+        
+        async function testRegister() {
+            try {
+                addResult('Testing registration...');
+                const testUser = {
+                    firstName: 'Test',
+                    lastName: 'User',
+                    email: `test${Date.now()}@example.com`,
+                    password: 'Test123!@#'
+                };
+                
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    body: JSON.stringify(testUser)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`✅ Registration successful: ${JSON.stringify(data.user || data)}`);
+                } else {
+                    addResult(`❌ Registration failed: ${response.status} - ${JSON.stringify(data)}`, true);
+                }
+            } catch (error) {
+                addResult(`❌ Registration error: ${error.message}`, true);
+            }
+        }
+        
+        async function testLogin() {
+            try {
+                addResult('Testing login...');
+                const credentials = {
+                    email: 'test@example.com',
+                    password: 'Test123!@#'
+                };
+                
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    body: JSON.stringify(credentials)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`✅ Login successful: ${JSON.stringify(data.user || data)}`);
+                } else {
+                    addResult(`❌ Login failed: ${response.status} - ${JSON.stringify(data)}`, true);
+                }
+            } catch (error) {
+                addResult(`❌ Login error: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>

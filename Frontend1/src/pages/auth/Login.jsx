@@ -29,9 +29,10 @@ const Login = () => {
         navigate('/admin/dashboard');
       } else {
         navigate('/dashboard');
-      }
-    } catch (error) {
-      setLoginError(error.response?.data?.message || 'Login failed. Please try again.');
+      }    } catch (error) {
+      console.error('Login submission error:', error);
+      // The AuthContext already processes the error, so we can use the message directly
+      setLoginError(error.message || error.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setSubmitting(false);
     }

@@ -70,8 +70,7 @@ export const AuthProvider = ({ children }) => {
       
       // Set authorization header
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
-      setUser(user);
+        setUser(user);
       setLoading(false);
       
       return user;    } catch (err) {
@@ -79,10 +78,21 @@ export const AuthProvider = ({ children }) => {
       console.error('Login error:', err);
       console.error('Error response:', err.response?.data);
       console.error('Error status:', err.response?.status);
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
-      throw err;
+      
+      // Handle specific error types
+      let errorMessage = 'Login failed. Please try again.';
+      if (err.response?.status === 429) {
+        errorMessage = 'Too many login attempts. Please wait 15 minutes before trying again.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
-  };  // Register function
+  };
+
+  // Register function
   const register = async (userData) => {
     try {
       setLoading(true);
@@ -102,8 +112,7 @@ export const AuthProvider = ({ children }) => {
       
       // Set authorization header
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
-      setUser(user);
+        setUser(user);
       setLoading(false);
       
       return user;    } catch (err) {
@@ -111,8 +120,17 @@ export const AuthProvider = ({ children }) => {
       console.error('Register error:', err);
       console.error('Error response:', err.response?.data);
       console.error('Error status:', err.response?.status);
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
-      throw err;
+      
+      // Handle specific error types
+      let errorMessage = 'Registration failed. Please try again.';
+      if (err.response?.status === 429) {
+        errorMessage = 'Too many registration attempts. Please wait 1 hour before trying again.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   };
   

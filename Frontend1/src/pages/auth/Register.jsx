@@ -76,25 +76,25 @@ const Register = () => {
         navigate('/admin/dashboard');
       } else {
         navigate('/dashboard');
-      }
-    } catch (error) {
+      }    } catch (error) {
       console.error('Registration error:', error);
       
       // Handle different types of errors
+      // First try to get errors from the response data
       if (error.response?.data?.errors) {
-        // Handle validation errors
+        // Handle validation errors from express-validator
         const errors = error.response.data.errors;
         errors.forEach(err => {
           if (err.field || err.param) {
             setFieldError(err.field || err.param, err.message || err.msg);
           }
         });
-      } else if (error.response?.data?.message) {
-        setRegisterError(error.response.data.message);
-      } else if (error.message) {
-        setRegisterError(error.message);
       } else {
-        setRegisterError('Registration failed. Please try again.');
+        // Handle general error messages
+        const errorMessage = error.message || 
+                           error.response?.data?.message || 
+                           'Registration failed. Please try again.';
+        setRegisterError(errorMessage);
       }
     } finally {
       setIsLoading(false);
