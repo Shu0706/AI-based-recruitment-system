@@ -21,6 +21,7 @@ const { connectDB } = require('./config/db.config');
 // Import middleware
 const { errorHandler } = require('./middleware/error.middleware');
 const { authMiddleware } = require('./middleware/auth.middleware');
+const { apiLimiter, speedLimiter } = require('./middleware/rateLimiter.middleware');
 
 // Initialize express app
 const app = express();
@@ -28,35 +29,97 @@ const app = express();
 // Connect to database
 connectDB();
 
-// Middleware
+// Trust proxy (important for rate limiting when behind a proxy)
+app.set('trust proxy', 1);
+
+// Security middleware
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  }
+}));
+
+// Rate limiting middleware
+app.use('/api/', apiLimiter);
+app.use('/api/', speedLimiter);
+
+// CORS configuration
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:3000',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:5174',
+      'http://127.0.0.1:3000'
+    ];
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   credentials: true,
   optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' }
-}));
 app.use(compression());
-app.use(morgan('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Logging middleware
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+} else {
+  app.use(morgan('combined'));
+}
+
+// Body parsing middleware with size limits
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    success: true,
+    message: 'Server is running properly!',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // Simple route for testing
 app.get('/api/test', (req, res) => {
-  res.json({ message: 'Server is running properly!' });
+  res.json({ 
+    success: true,
+    message: 'Server is running properly!',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Test POST endpoint
 app.post('/api/test-post', (req, res) => {
   console.log('Test POST received:', req.body);
-  res.json({ message: 'POST received successfully', data: req.body });
+  res.json({ 
+    success: true,
+    message: 'POST received successfully', 
+    data: req.body,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Routes

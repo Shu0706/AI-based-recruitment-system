@@ -1,7 +1,8 @@
 const express = require('express');
-const { check } = require('express-validator');
+const { check, body } = require('express-validator');
 const authController = require('../controllers/auth.controller');
 const { authMiddleware } = require('../middleware/auth.middleware');
+const { authLimiter, registrationLimiter, passwordResetLimiter } = require('../middleware/rateLimiter.middleware');
 
 const router = express.Router();
 
@@ -12,12 +13,60 @@ const router = express.Router();
  */
 router.post(
   '/register',
+  registrationLimiter, // Apply registration rate limiting
   [
-    check('firstName', 'First name is required').not().isEmpty(),
-    check('lastName', 'Last name is required').not().isEmpty(),
-    check('email', 'Please include a valid email').isEmail(),
-    check('password', 'Password must be 6 or more characters').isLength({ min: 6 }),
-    check('role', 'Role must be either "user" or "admin"').optional().isIn(['user', 'admin']),
+    check('firstName')
+      .notEmpty()
+      .withMessage('First name is required')
+      .isLength({ min: 2, max: 50 })
+      .withMessage('First name must be between 2 and 50 characters')
+      .matches(/^[a-zA-Z\s]+$/)
+      .withMessage('First name can only contain letters and spaces')
+      .trim(),
+    
+    check('lastName')
+      .notEmpty()
+      .withMessage('Last name is required')
+      .isLength({ min: 2, max: 50 })
+      .withMessage('Last name must be between 2 and 50 characters')
+      .matches(/^[a-zA-Z\s]+$/)
+      .withMessage('Last name can only contain letters and spaces')
+      .trim(),
+    
+    check('email')
+      .isEmail()
+      .withMessage('Please enter a valid email address')
+      .normalizeEmail()
+      .custom(async (email) => {
+        // Additional email validation can be added here
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(email)) {
+          throw new Error('Please enter a valid email address');
+        }
+        return true;
+      }),
+    
+    body('password')
+      .isLength({ min: 8 })
+      .withMessage('Password must be at least 8 characters long')
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+      .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'),
+    
+    check('role')
+      .optional()
+      .isIn(['user', 'admin'])
+      .withMessage('Role must be either "user" or "admin"'),
+    
+    check('phone')
+      .optional()
+      .matches(/^[\+]?[1-9][\d]{0,15}$/)
+      .withMessage('Please enter a valid phone number'),
+    
+    check('location')
+      .optional()
+      .isLength({ max: 100 })
+      .withMessage('Location cannot be more than 100 characters')
+      .trim()
   ],
   authController.register
 );
@@ -29,9 +78,16 @@ router.post(
  */
 router.post(
   '/login',
+  authLimiter, // Apply auth rate limiting
   [
-    check('email', 'Please include a valid email').isEmail(),
-    check('password', 'Password is required').exists(),
+    check('email')
+      .isEmail()
+      .withMessage('Please enter a valid email address')
+      .normalizeEmail(),
+    
+    check('password')
+      .notEmpty()
+      .withMessage('Password is required')
   ],
   authController.login
 );
