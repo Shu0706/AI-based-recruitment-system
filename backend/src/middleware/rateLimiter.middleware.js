@@ -14,10 +14,10 @@ const apiLimiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
-// Strict rate limiter for authentication endpoints
+// Strict rate limiter for authentication endpoints (more lenient for development)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs for auth endpoints
+  max: process.env.NODE_ENV === 'development' ? 100 : 5, // Allow more attempts in development
   message: {
     success: false,
     message: 'Too many authentication attempts from this IP, please try again later.',
@@ -41,10 +41,10 @@ const passwordResetLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Registration rate limiter
+// Registration rate limiter (more lenient for development)
 const registrationLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // Limit each IP to 3 registration attempts per hour
+  max: process.env.NODE_ENV === 'development' ? 50 : 3, // Allow more attempts in development
   message: {
     success: false,
     message: 'Too many registration attempts from this IP, please try again later.',
