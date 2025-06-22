@@ -80,9 +80,11 @@ exports.register = async (req, res) => {
         role: user.role,
         isEmailVerified: user.isEmailVerified
       },
-    });
-  } catch (error) {
+    });  } catch (error) {
     console.error('Error registering user:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Error code:', error.code);
     
     // Handle mongoose validation errors
     if (error.name === 'ValidationError') {
@@ -99,11 +101,20 @@ exports.register = async (req, res) => {
 
     // Handle duplicate key error
     if (error.code === 11000) {
+      console.log('Duplicate key error for email:', req.body.email);
       return res.status(409).json({
         success: false,
         message: 'User with this email already exists'
       });
     }
+
+    // Log unexpected errors with more detail
+    console.error('Unexpected registration error:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      requestBody: req.body
+    });
 
     res.status(500).json({ 
       success: false,
